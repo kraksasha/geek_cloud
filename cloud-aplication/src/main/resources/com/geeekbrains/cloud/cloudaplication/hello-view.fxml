@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" prefHeight="369.0" prefWidth="487.0" spacing="20.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/18" fx:controller="com.geeekbrains.cloud.cloudaplication.CloudController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+   <children>
+      <HBox prefHeight="268.0" prefWidth="447.0">
+         <children>
+            <ListView fx:id="clientView" prefHeight="268.0" prefWidth="231.0" />
+            <ListView fx:id="serverView" prefHeight="268.0" prefWidth="233.0" />
+         </children>
+      </HBox>
+      <HBox prefHeight="47.0" prefWidth="428.0">
+         <children>
+            <Button onAction="#upload" mnemonicParsing="false" prefHeight="43.0" prefWidth="101.0" text="ToServer" />
+            <Button onAction="#download" mnemonicParsing="false" prefHeight="43.0" prefWidth="94.0" text="FromServer" />
+         </children>
+      </HBox>
+   </children>
+</VBox>
