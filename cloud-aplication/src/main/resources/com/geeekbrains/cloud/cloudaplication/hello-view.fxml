@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" prefHeight="369.0" prefWidth="487.0" spacing="20.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/18" fx:controller="com.geeekbrains.cloud.cloudaplication.CloudController">
+<VBox alignment="CENTER" prefHeight="369.0" prefWidth="487.0" spacing="20.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geeekbrains.cloud.cloudaplication.CloudController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
@@ -19,8 +19,12 @@
       </HBox>
       <HBox prefHeight="47.0" prefWidth="428.0">
          <children>
-            <Button onAction="#upload" mnemonicParsing="false" prefHeight="43.0" prefWidth="101.0" text="ToServer" />
-            <Button onAction="#download" mnemonicParsing="false" prefHeight="43.0" prefWidth="94.0" text="FromServer" />
+            <Button mnemonicParsing="false" onAction="#goToNextDirectory" prefHeight="44.0" prefWidth="60.0" text="GoTo" />
+            <Button mnemonicParsing="false" onAction="#goBackFromDirectory" prefHeight="44.0" prefWidth="64.0" text="Back" />
+            <Button mnemonicParsing="false" onAction="#upload" prefHeight="43.0" prefWidth="101.0" text="ToServer" />
+            <Button mnemonicParsing="false" onAction="#download" prefHeight="43.0" prefWidth="94.0" text="FromServer" />
+            <Button mnemonicParsing="false" onAction="#goToNextDirectoryServ" prefHeight="44.0" prefWidth="63.0" text="GoToServ" />
+            <Button mnemonicParsing="false" onAction="#goBackFromDirectoryServ" prefHeight="55.0" prefWidth="67.0" text="BackServ" />
          </children>
       </HBox>
    </children>

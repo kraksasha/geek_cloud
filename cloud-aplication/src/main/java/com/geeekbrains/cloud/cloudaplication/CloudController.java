@@ -1,5 +1,6 @@
 package com.geeekbrains.cloud.cloudaplication;
 
+import com.geekbrains.cloud.*;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -7,9 +8,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -22,26 +23,43 @@ public class CloudController implements Initializable {
     @FXML
     public ListView<String> serverView;
 
+
     private Network network;
 
     private String homeDir;
 
-    private byte buf[];
-
     public void readLoop(){
         try {
             while (true){
-                String command = network.readString();
-                if (command.equals("#list#")){
-                    Platform.runLater(()->serverView.getItems().clear());
-                    int len = network.readInt();
-                    for (int i = 0; i < len; i++) {
-                        String file = network.readString();
-                        Platform.runLater(()->serverView.getItems().add(file));
-                    }
+                CloudMessage message = network.read();
+                if (message instanceof ListFiles listFiles) {
+                    Platform.runLater(() -> {
+                        serverView.getItems().clear();
+                        serverView.getItems().addAll(listFiles.getFiles());
+                    });
+                } else if (message instanceof FileMessage fileMessage) {
+                    Path current = Path.of(homeDir).resolve(fileMessage.getName());
+                    Files.write(current, fileMessage.getData());
+                    Platform.runLater(() -> {
+                        clientView.getItems().clear();
+                        clientView.getItems().addAll(getFiles(homeDir));
+                    });
+                } else if (message instanceof DirectoryMessage fileMessage) {
+                    Path current = Path.of(homeDir).resolve(fileMessage.getName());
+                    homeDir = current.toString();
+                    Platform.runLater(() -> {
+                        clientView.getItems().clear();
+                        clientView.getItems().addAll(getFiles(homeDir));
+                    });
+                } else if (message instanceof  DirectoryMessageBack directoryMessageBack){
+                    homeDir = Path.of(homeDir).getParent().toString();
+                    Platform.runLater(() -> {
+                        clientView.getItems().clear();
+                        clientView.getItems().addAll(getFiles(homeDir));
+                    });
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
 
@@ -49,7 +67,6 @@ public class CloudController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
-            buf = new byte[256];
             homeDir = System.getProperty("user.home");
             clientView.getItems().clear();
             clientView.getItems().addAll(getFiles(homeDir));
@@ -69,20 +86,30 @@ public class CloudController implements Initializable {
     }
 
     public void upload(ActionEvent actionEvent) throws IOException {
-        network.getOs().writeUTF("#file#");
         String file = clientView.getSelectionModel().getSelectedItem();
-        network.getOs().writeUTF(file);
-        File toSend = Path.of(homeDir).resolve(file).toFile();
-        network.getOs().writeLong(toSend.length());
-        try(FileInputStream fis = new FileInputStream(toSend)){
-            while (fis.available() > 0){
-                int read = fis.read(buf);
-                network.getOs().write(buf,0,read);
-            }
-        }
-        network.getOs().flush();
+        network.write(new FileMessage(Path.of(homeDir).resolve(file)));
     }
 
-    public void download(ActionEvent actionEvent) {
+    public void download(ActionEvent actionEvent) throws Exception {
+        String file = serverView.getSelectionModel().getSelectedItem();
+        network.write(new FileRequest(file));
+    }
+
+    public void goToNextDirectory(ActionEvent actionEvent) throws IOException {
+        String file = clientView.getSelectionModel().getSelectedItem();
+        network.write(new FileRequestDirectory(file));
+    }
+
+    public void goBackFromDirectory(ActionEvent actionEvent) throws IOException {
+        network.write(new FileRequestDirectoryBack());
+    }
+
+    public void goToNextDirectoryServ(ActionEvent actionEvent) throws IOException {
+        String file = serverView.getSelectionModel().getSelectedItem();
+        network.write(new FileRequestServ(file));
+    }
+
+    public void goBackFromDirectoryServ(ActionEvent actionEvent) throws IOException {
+        network.write(new FileRequestServBack());
     }
 }
