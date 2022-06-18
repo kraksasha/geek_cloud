@@ -16,5 +16,4 @@ public class FileMessage implements CloudMessage{
         data = Files.readAllBytes(path);
         name = path.getFileName().toString();
     }
-
 }

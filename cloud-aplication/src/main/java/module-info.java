@@ -4,6 +4,7 @@ module com.geeekbrains.cloud.cloudaplication {
     requires com.geekbrains.cloud.model;
     requires io.netty.codec;
 
+
     opens com.geeekbrains.cloud.cloudaplication to javafx.fxml;
     exports com.geeekbrains.cloud.cloudaplication;
 }

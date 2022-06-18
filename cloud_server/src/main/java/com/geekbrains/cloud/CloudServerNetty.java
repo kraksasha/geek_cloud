@@ -12,15 +12,21 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.Socket;
+
 @Slf4j
 public class CloudServerNetty {
-    public CloudServerNetty() {
 
+    private JdbcApp jdbcApp;
+
+
+    public CloudServerNetty() {
         EventLoopGroup auth = new NioEventLoopGroup(1);
         EventLoopGroup worker = new NioEventLoopGroup();
+        jdbcApp = new JdbcApp(this);
 
         try {
-
+            jdbcApp.start();
             ServerBootstrap server = new ServerBootstrap();
             server.group(auth, worker)
                     .channel(NioServerSocketChannel.class)

@@ -1,11 +1,24 @@
 package com.geeekbrains.cloud.cloudaplication;
 
 import com.geekbrains.cloud.*;
+import com.geekbrains.cloud.AuthMessage.AuthMessage;
+import com.geekbrains.cloud.AuthMessage.AuthMessageBack;
+import com.geekbrains.cloud.DirectoryMessage.DirectoryMessage;
+import com.geekbrains.cloud.DirectoryMessage.FileRequestDirectory;
+import com.geekbrains.cloud.DirectoryMessageBack.DirectoryMessageBack;
+import com.geekbrains.cloud.DirectoryMessageBack.FileRequestDirectoryBack;
+import com.geekbrains.cloud.FileRequestServ.FileRequestServ;
+import com.geekbrains.cloud.FileRequestServ.FileRequestServBack;
+import com.geekbrains.cloud.RegistrationMessage.RegistrationMessage;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,16 +35,52 @@ public class CloudController implements Initializable {
     public ListView<String> clientView;
     @FXML
     public ListView<String> serverView;
-
+    @FXML
+    private TextField loginField;
+    @FXML
+    private PasswordField passwordField;
+    @FXML
+    private HBox authPanel;
+    @FXML
+    private HBox regButtonPanel;
+    @FXML
+    private VBox formRegistrationPanel;
+    @FXML
+    private TextField nicknameField, logField, passField;
 
     private Network network;
 
     private String homeDir;
 
+    public void setAuthenticated(boolean authenticated) {
+        authPanel.setVisible(!authenticated);
+        authPanel.setManaged(!authenticated);
+        regButtonPanel.setVisible(!authenticated);
+        regButtonPanel.setManaged(!authenticated);
+        clientView.setVisible(authenticated);
+        serverView.setVisible(authenticated);
+    }
+
+    public void setRegistration(boolean registration){
+        formRegistrationPanel.setVisible(registration);
+        formRegistrationPanel.setManaged(registration);
+    }
+
+
     public void readLoop(){
         try {
+            String futureDir = "";
             while (true){
                 CloudMessage message = network.read();
+                if (message instanceof AuthMessageBack authMessageBack){
+                    if (authMessageBack.getName() != null){
+                        System.out.println(authMessageBack.getName() + " подключился");
+                        setAuthenticated(true);
+                        if (futureDir != authMessageBack.getName()){
+                            network.write(new AuthMessageClient(authMessageBack.getName()));
+                        }
+                    }
+                }
                 if (message instanceof ListFiles listFiles) {
                     Platform.runLater(() -> {
                         serverView.getItems().clear();
@@ -45,8 +94,7 @@ public class CloudController implements Initializable {
                         clientView.getItems().addAll(getFiles(homeDir));
                     });
                 } else if (message instanceof DirectoryMessage fileMessage) {
-                    Path current = Path.of(homeDir).resolve(fileMessage.getName());
-                    homeDir = current.toString();
+                    homeDir = homeDir + "/" + fileMessage.getName();
                     Platform.runLater(() -> {
                         clientView.getItems().clear();
                         clientView.getItems().addAll(getFiles(homeDir));
@@ -67,6 +115,8 @@ public class CloudController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
+            setAuthenticated(false);
+            setRegistration(false);
             homeDir = System.getProperty("user.home");
             clientView.getItems().clear();
             clientView.getItems().addAll(getFiles(homeDir));
@@ -111,5 +161,24 @@ public class CloudController implements Initializable {
 
     public void goBackFromDirectoryServ(ActionEvent actionEvent) throws IOException {
         network.write(new FileRequestServBack());
+    }
+
+    public void sendAuth(ActionEvent event) throws IOException {
+        network.write(new AuthMessage("auth" + " " + loginField.getText() + " " + passwordField.getText()));
+    }
+
+    public void goRegistration(ActionEvent event) {
+        setRegistration(true);
+    }
+
+    public void registrationEnd(ActionEvent event) throws IOException {
+        String name = "'" + nicknameField.getText() + "'";
+        String log = "'" + logField.getText() + "'";
+        String pass = "'" + passField.getText() + "'";
+        network.write(new RegistrationMessage(name,log,pass));
+        nicknameField.clear();
+        logField.clear();
+        passField.clear();
+        setRegistration(false);
     }
 }

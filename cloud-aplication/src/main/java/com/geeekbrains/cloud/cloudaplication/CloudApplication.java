@@ -12,7 +12,7 @@ public class CloudApplication extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(CloudApplication.class.getResource("hello-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
-        stage.setTitle("Cloud");
+        stage.setTitle("Cloud storage");
         stage.setScene(scene);
         stage.show();
     }
